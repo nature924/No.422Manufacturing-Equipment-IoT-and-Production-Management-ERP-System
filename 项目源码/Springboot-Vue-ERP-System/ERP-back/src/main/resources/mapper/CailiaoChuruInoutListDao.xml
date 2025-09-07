@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.CailiaoChuruInoutListDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.cailiao_churu_inout_id as cailiaoChuruInoutId
+        ,a.cailiao_id as cailiaoId
+        ,a.cailiao_churu_inout_list_number as cailiaoChuruInoutListNumber
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.CailiaoChuruInoutListView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,cailiao.cailiao_uuid_unmber as cailiaoUuidUnmber
+        ,cailiao.cailiao_name as cailiaoName
+        ,cailiao.cailiao_types as cailiaoTypes
+        ,cailiao.cailiao_kucun_number as cailiaoKucunNumber
+        ,cailiao.cailiao_danwei as cailiaoDanwei
+        ,cailiaoChuruInout.cailiao_churu_inout_uuid_number as cailiaoChuruInoutUuidNumber
+        ,cailiaoChuruInout.cailiao_churu_inout_name as cailiaoChuruInoutName
+        ,cailiaoChuruInout.cailiao_churu_inout_types as cailiaoChuruInoutTypes
+        ,cailiaoChuruInout.cailiao_churu_inout_content as cailiaoChuruInoutContent
+
+        FROM cailiao_churu_inout_list  a
+        left JOIN cailiao cailiao ON a.cailiao_id = cailiao.id
+        left JOIN cailiao_churu_inout cailiaoChuruInout ON a.cailiao_churu_inout_id = cailiaoChuruInout.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.cailiaoChuruInoutId != null and params.cailiaoChuruInoutId != ''">
+                and (
+                    a.cailiao_churu_inout_id = #{params.cailiaoChuruInoutId}
+                )
+            </if>
+            <if test="params.cailiaoId != null and params.cailiaoId != ''">
+                and (
+                    a.cailiao_id = #{params.cailiaoId}
+                )
+            </if>
+            <if test="params.cailiaoChuruInoutListNumberStart != null and params.cailiaoChuruInoutListNumberStart != ''">
+                <![CDATA[  and a.cailiao_churu_inout_list_number >= #{params.cailiaoChuruInoutListNumberStart}   ]]>
+            </if>
+            <if test="params.cailiaoChuruInoutListNumberEnd != null and params.cailiaoChuruInoutListNumberEnd != ''">
+                <![CDATA[  and a.cailiao_churu_inout_list_number <= #{params.cailiaoChuruInoutListNumberEnd}   ]]>
+            </if>
+             <if test="params.cailiaoChuruInoutListNumber != null and params.cailiaoChuruInoutListNumber != ''">
+                and a.cailiao_churu_inout_list_number = #{params.cailiaoChuruInoutListNumber}
+             </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+
+                <!-- 判断材料信息的id不为空 -->
+            <if test=" params.cailiaoIdNotNull != '' and params.cailiaoIdNotNull != null and params.cailiaoIdNotNull != 'null' ">
+                and a.cailiao_id IS NOT NULL
+            </if>
+            <if test=" params.cailiaoUuidUnmber != '' and params.cailiaoUuidUnmber != null and params.cailiaoUuidUnmber != 'null' ">
+                and cailiao.cailiao_uuid_unmber like CONCAT('%',#{params.cailiaoUuidUnmber},'%')
+            </if>
+            <if test=" params.cailiaoName != '' and params.cailiaoName != null and params.cailiaoName != 'null' ">
+                and cailiao.cailiao_name like CONCAT('%',#{params.cailiaoName},'%')
+            </if>
+            <if test="params.cailiaoTypes != null  and params.cailiaoTypes != ''">
+                and cailiao.cailiao_types = #{params.cailiaoTypes}
+            </if>
+
+            <if test="params.cailiaoKucunNumberStart != null  and params.cailiaoKucunNumberStart != '' ">
+                <![CDATA[  and cailiao.cailiao_kucun_number >= #{params.cailiaoKucunNumberStart}   ]]>
+            </if>
+            <if test="params.cailiaoKucunNumberEnd != null  and params.cailiaoKucunNumberEnd != '' ">
+                <![CDATA[  and cailiao.cailiao_kucun_number <= #{params.cailiaoKucunNumberEnd}   ]]>
+            </if>
+            <if test="params.cailiaoKucunNumber != null  and params.cailiaoKucunNumber != '' ">
+                and cailiao.cailiao_kucun_number = #{params.cailiaoKucunNumber}
+            </if>
+            <if test=" params.cailiaoDanwei != '' and params.cailiaoDanwei != null and params.cailiaoDanwei != 'null' ">
+                and cailiao.cailiao_danwei like CONCAT('%',#{params.cailiaoDanwei},'%')
+            </if>
+                <!-- 判断出入库的id不为空 -->
+            <if test=" params.cailiaoChuruInoutIdNotNull != '' and params.cailiaoChuruInoutIdNotNull != null and params.cailiaoChuruInoutIdNotNull != 'null' ">
+                and a.cailiao_churu_inout_id IS NOT NULL
+            </if>
+            <if test=" params.cailiaoChuruInoutUuidNumber != '' and params.cailiaoChuruInoutUuidNumber != null and params.cailiaoChuruInoutUuidNumber != 'null' ">
+                and cailiaoChuruInout.cailiao_churu_inout_uuid_number like CONCAT('%',#{params.cailiaoChuruInoutUuidNumber},'%')
+            </if>
+            <if test=" params.cailiaoChuruInoutName != '' and params.cailiaoChuruInoutName != null and params.cailiaoChuruInoutName != 'null' ">
+                and cailiaoChuruInout.cailiao_churu_inout_name like CONCAT('%',#{params.cailiaoChuruInoutName},'%')
+            </if>
+            <if test="params.cailiaoChuruInoutTypes != null  and params.cailiaoChuruInoutTypes != ''">
+                and cailiaoChuruInout.cailiao_churu_inout_types = #{params.cailiaoChuruInoutTypes}
+            </if>
+
+            <if test=" params.cailiaoChuruInoutContent != '' and params.cailiaoChuruInoutContent != null and params.cailiaoChuruInoutContent != 'null' ">
+                and cailiaoChuruInout.cailiao_churu_inout_content like CONCAT('%',#{params.cailiaoChuruInoutContent},'%')
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(cailiaoChuruInout.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(cailiaoChuruInout.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>

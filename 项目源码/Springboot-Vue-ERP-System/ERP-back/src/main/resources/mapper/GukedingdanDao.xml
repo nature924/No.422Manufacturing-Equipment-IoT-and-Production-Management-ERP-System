@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.GukedingdanDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.gukedingdan_uuid_unmber as gukedingdanUuidUnmber
+        ,a.chanpin_id as chanpinId
+        ,a.gukedingdan_number as gukedingdanNumber
+        ,a.insert_time as insertTime
+        ,a.gukedingdan_time as gukedingdanTime
+        ,a.gukedingdan_types as gukedingdanTypes
+        ,a.gukedingdan_text as gukedingdanText
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.GukedingdanView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,chanpin.chanpin_uuid_unmber as chanpinUuidUnmber
+        ,chanpin.chanpin_name as chanpinName
+        ,chanpin.chanpin_types as chanpinTypes
+        ,chanpin.shangxia_types as shangxiaTypes
+        ,chanpin.chanpin_content as chanpinContent
+
+        FROM gukedingdan  a
+        left JOIN chanpin chanpin ON a.chanpin_id = chanpin.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.gukedingdanUuidUnmber != '' and params.gukedingdanUuidUnmber != null and params.gukedingdanUuidUnmber != 'null' ">
+                and a.gukedingdan_uuid_unmber like CONCAT('%',#{params.gukedingdanUuidUnmber},'%')
+            </if>
+            <if test="params.chanpinId != null and params.chanpinId != ''">
+                and (
+                    a.chanpin_id = #{params.chanpinId}
+                )
+            </if>
+            <if test="params.gukedingdanNumberStart != null and params.gukedingdanNumberStart != ''">
+                <![CDATA[  and a.gukedingdan_number >= #{params.gukedingdanNumberStart}   ]]>
+            </if>
+            <if test="params.gukedingdanNumberEnd != null and params.gukedingdanNumberEnd != ''">
+                <![CDATA[  and a.gukedingdan_number <= #{params.gukedingdanNumberEnd}   ]]>
+            </if>
+             <if test="params.gukedingdanNumber != null and params.gukedingdanNumber != ''">
+                and a.gukedingdan_number = #{params.gukedingdanNumber}
+             </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+            <if test=" params.gukedingdanTimeStart != '' and params.gukedingdanTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.gukedingdan_time) >= UNIX_TIMESTAMP(#{params.gukedingdanTimeStart}) ]]>
+            </if>
+            <if test=" params.gukedingdanTimeEnd != '' and params.gukedingdanTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.gukedingdan_time) <= UNIX_TIMESTAMP(#{params.gukedingdanTimeEnd}) ]]>
+            </if>
+            <if test="params.gukedingdanTypes != null and params.gukedingdanTypes != ''">
+                and a.gukedingdan_types = #{params.gukedingdanTypes}
+            </if>
+            <if test=" params.gukedingdanText != '' and params.gukedingdanText != null and params.gukedingdanText != 'null' ">
+                and a.gukedingdan_text like CONCAT('%',#{params.gukedingdanText},'%')
+            </if>
+
+                <!-- 判断产品信息的id不为空 -->
+            <if test=" params.chanpinIdNotNull != '' and params.chanpinIdNotNull != null and params.chanpinIdNotNull != 'null' ">
+                and a.chanpin_id IS NOT NULL
+            </if>
+            <if test=" params.chanpinUuidUnmber != '' and params.chanpinUuidUnmber != null and params.chanpinUuidUnmber != 'null' ">
+                and chanpin.chanpin_uuid_unmber like CONCAT('%',#{params.chanpinUuidUnmber},'%')
+            </if>
+            <if test=" params.chanpinName != '' and params.chanpinName != null and params.chanpinName != 'null' ">
+                and chanpin.chanpin_name like CONCAT('%',#{params.chanpinName},'%')
+            </if>
+            <if test="params.chanpinTypes != null  and params.chanpinTypes != ''">
+                and chanpin.chanpin_types = #{params.chanpinTypes}
+            </if>
+
+            <if test="params.shangxiaTypes != null  and params.shangxiaTypes != ''">
+                and chanpin.shangxia_types = #{params.shangxiaTypes}
+            </if>
+
+            <if test=" params.chanpinContent != '' and params.chanpinContent != null and params.chanpinContent != 'null' ">
+                and chanpin.chanpin_content like CONCAT('%',#{params.chanpinContent},'%')
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>
